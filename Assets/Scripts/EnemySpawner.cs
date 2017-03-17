@@ -6,11 +6,12 @@ public class EnemySpawner : MonoBehaviour
 {
 
 	public GameObject EnemyPrefab;
-	private Vector3 m_posMin,m_posMax;
+	private Vector3 m_posMin, m_posMax;
 	private bool m_IsMovingRight = false;
 	public float m_Speed = 1;
+	public float m_PopRate;
 
-	private void AdaptGizmoToFormation()
+	public void AdaptGizmoToFormation()
 	{
 		float SpriteHalfSize = EnemyPrefab.GetComponent<SpriteRenderer>().sprite.bounds.size.x / 2;
 
@@ -47,7 +48,7 @@ public class EnemySpawner : MonoBehaviour
 		m_posMin -= new Vector3(SpriteHalfSize, SpriteHalfSize, 0);
 		m_posMax += new Vector3(SpriteHalfSize, SpriteHalfSize, 0);
 
-		
+
 		//Vector3 FormationCenter = Vector3.Lerp(posMin, posMax, 0.5f);
 		//m_FormationSize = posMax;
 		//Gizmos.DrawCube(FormationCenter, new Vector2(Vector2.Distance(new Vector2(posMin.x,0),new Vector2(posMax.x,0)), Vector2.Distance(new Vector2(0,posMin.y), new Vector2(0,posMax.y))));
@@ -74,7 +75,14 @@ public class EnemySpawner : MonoBehaviour
 	void Start()
 	{
 		AdaptGizmoToFormation();
+		RespawnAll();
+	}
 
+	/// <summary>
+	/// respawn All Enemies at Once
+	/// </summary>
+	private void RespawnAll()
+	{
 		foreach (Transform group in transform)
 		{
 			foreach (Transform child in group)
@@ -106,12 +114,66 @@ public class EnemySpawner : MonoBehaviour
 			}
 		}
 		//Vector3.Lerp(new Vector3(-100, -100, 0), new Vector3(100, 100, 0), Time.fixedTime);
-
-
-		
-
 		//transform.position = new Vector3(Mathf.Clamp(transform.position.x, m_posMin.x, m_posMax.x), Mathf.Clamp(transform.position.y, m_posMin.y, m_posMax.y), 0);
+		if (AllMembersAreDead())
+		{
+			Respawn();
+		}
+
 	}
 
-	
+	private void Respawn()
+	{
+		Debug.Log("Respawn Asked");
+
+		InvokeRepeating("PopEnemyUnit", 0.000000001f, m_PopRate);
+	}
+
+	private bool AllMembersAreDead()
+	{
+		int AliveCount = 0;
+
+		foreach (Transform group in transform)
+		{
+			foreach (Transform child in group)
+			{
+				AliveCount += child.childCount;
+			}
+		}
+		return AliveCount == 0;
+
+	}
+
+	private void PopEnemyUnit()
+	{
+		Transform freePos = GetNextFreePosition();
+
+		if (freePos != null)
+		{
+			GameObject enemy = Instantiate(EnemyPrefab, freePos.position, new Quaternion()) as GameObject;
+			enemy.transform.parent = freePos;
+		}
+		else
+		{
+			CancelInvoke("PopEnemyUnit");
+		}
+	}
+
+
+	private Transform GetNextFreePosition()
+	{
+		foreach (Transform group in transform)
+		{
+			foreach (Transform child in group)
+			{
+				if (child.childCount == 0)
+				{
+					return  child;
+				}
+
+			}
+		}
+
+		return null;
+	}
 }

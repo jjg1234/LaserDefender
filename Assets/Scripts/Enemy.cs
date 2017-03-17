@@ -9,6 +9,7 @@ public class Enemy : MonoBehaviour
 	public GameObject m_Projectile;
 	public float m_ShootingVelocity;
 	public float m_ShotPerSecond = 0.5f;
+	public int m_PointForKilledEnemy = 10;
 	// Use this for initialization
 	void Start()
 	{
@@ -28,6 +29,7 @@ public class Enemy : MonoBehaviour
 
 		if (m_Life <= 0)
 		{
+			GameObject.FindGameObjectWithTag("scoreHandler").AddToScore(m_PointForKilledEnemy);
 			Destroy(gameObject);
 		}
 	}
