@@ -29,7 +29,10 @@ public class Enemy : MonoBehaviour
 
 		if (m_Life <= 0)
 		{
-			GameObject.FindGameObjectWithTag("scoreHandler").AddToScore(m_PointForKilledEnemy);
+			ScoreHandler myScoreHandler = GameObject.FindObjectOfType<ScoreHandler>();
+			myScoreHandler.AddToScore(m_PointForKilledEnemy);
+			//GameObject.FindGameObjectWithTag("scoreHandler").AddToScore(m_PointForKilledEnemy);
+
 			Destroy(gameObject);
 		}
 	}
